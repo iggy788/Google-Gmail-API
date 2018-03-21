@@ -121,8 +121,42 @@ function listLabels(auth) {
 				for (var i = 0; i < labels.length; i++) {
 					var label = labels[i];
 					console.log("- %s", label.name);
+					// console.log(label.id);
 				}
 			}
 		}
 	);
+	gmail.users.messages.list(
+		{
+			auth: auth,
+			userId: "me",
+			id: "INBOX"
+		},
+		function(err, response) {
+			if (err) {
+				console.log("The API returned an error: " + err);
+				return;
+			}
+			console.log(response.messages);
+			// var labels = response.messages;
+			// if (labels.length == 0) {
+			// 	console.log("No labels found.");
+			// } else {
+			// 	console.log("Messages:");
+			// 	for (var i = 0; i < labels.length; i++) {
+			// 		var label = labels[i];
+			// 		console.log("- %s", label.name);
+			// 		console.log(label.messageListVisibility);
+			// 		console.log(label.messageListVisibility);
+			// 	}
+			// }
+		}
+	);
+var Gmail = require("node-gmail-api"),
+	gmail = new Gmail(auth),
+	s = gmail.messages("label:inbox", { max: 10 });
+
+s.on("data", function(d) {
+	console.log(d.snippet);
+});
 }
