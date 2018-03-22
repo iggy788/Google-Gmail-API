@@ -167,11 +167,4 @@ function listLabels(auth) {
 			);
 		}
 	);
-	// var Gmail = require("node-gmail-api"),
-	// 	gmail = new Gmail(auth),
-	// 	s = gmail.messages("label:inbox", { max: 10 });
-
-	// s.on("data", function(d) {
-	// 	console.log(d.snippet);
-	// });
 }
