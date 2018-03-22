@@ -2,10 +2,15 @@ var fs = require("fs");
 var readline = require("readline");
 var google = require("googleapis");
 var googleAuth = require("google-auth-library");
+var chalk = require("chalk");
 
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/gmail-nodejs-quickstart.json
-var SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"];
+var SCOPES = [
+	"https://mail.google.com/",
+	"https://www.googleapis.com/auth/gmail.metadata",
+	"https://www.googleapis.com/auth/gmail.readonly"
+];
 var TOKEN_DIR =
 	(process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) +
 	"/.credentials/";
@@ -37,7 +42,7 @@ function authorize(credentials, callback) {
 	var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
 	// Check if we have previously stored a token.
-	fs.readFile(TOKEN_PATH, function(err, token) {
+	fs.readFile(TOKEN_PATH, function (err, token) {
 		if (err) {
 			getNewToken(oauth2Client, callback);
 		} else {
@@ -65,9 +70,9 @@ function getNewToken(oauth2Client, callback) {
 		input: process.stdin,
 		output: process.stdout
 	});
-	rl.question("Enter the code from that page here: ", function(code) {
+	rl.question("Enter the code from that page here: ", function (code) {
 		rl.close();
-		oauth2Client.getToken(code, function(err, token) {
+		oauth2Client.getToken(code, function (err, token) {
 			if (err) {
 				console.log("Error while trying to retrieve access token", err);
 				return;
@@ -103,12 +108,11 @@ function storeToken(token) {
  */
 function listLabels(auth) {
 	var gmail = google.gmail("v1");
-	gmail.users.labels.list(
-		{
+	gmail.users.labels.list({
 			auth: auth,
 			userId: "me"
 		},
-		function(err, response) {
+		function (err, response) {
 			if (err) {
 				console.log("The API returned an error: " + err);
 				return;
@@ -126,37 +130,48 @@ function listLabels(auth) {
 			}
 		}
 	);
-	gmail.users.messages.list(
-		{
+	gmail.users.messages.list({
 			auth: auth,
 			userId: "me",
-			id: "INBOX"
 		},
-		function(err, response) {
+		function (err, response) {
 			if (err) {
 				console.log("The API returned an error: " + err);
 				return;
 			}
-			console.log(response.messages);
-			// var labels = response.messages;
-			// if (labels.length == 0) {
-			// 	console.log("No labels found.");
-			// } else {
-			// 	console.log("Messages:");
-			// 	for (var i = 0; i < labels.length; i++) {
-			// 		var label = labels[i];
-			// 		console.log("- %s", label.name);
-			// 		console.log(label.messageListVisibility);
-			// 		console.log(label.messageListVisibility);
-			// 	}
-			// }
+			console.log("Request body: ");
+			console.log(response);
+			console.log("nextPageToken: ");
+			console.log(response.nextPageToken);
+			gmail.users.messages.get(
+				{
+					auth: auth,
+					userId: "me",
+					// id: response.messages.id,
+					id: "16227cc839f69a9a",
+					format: "full"
+				},
+				function(err, response) {
+					if (err) {
+						console.log("The API returned an error: " + err);
+						return;
+					}
+					console.log(chalk.blue("List of headers on this message part. For the top-level message part, representing the entire message payload, it will contain the standard RFC 2822 email headers such as To, From, and Subject: "));
+					console.log(chalk.blue(response.payload.headers[0].name));
+					console.log(chalk.blue(response.payload.headers[0].value));
+					console.log(chalk.green("A short part of the message text: "));
+					console.log(chalk.green(response.snippet));
+					console.log(chalk.red("The Entire email message: "));
+					console.log(response);
+				}
+			);
 		}
 	);
-// var Gmail = require("node-gmail-api"),
-// 	gmail = new Gmail(auth),
-// 	s = gmail.messages("label:inbox", { max: 10 });
+	// var Gmail = require("node-gmail-api"),
+	// 	gmail = new Gmail(auth),
+	// 	s = gmail.messages("label:inbox", { max: 10 });
 
-// s.on("data", function(d) {
-// 	console.log(d.snippet);
-// });
+	// s.on("data", function(d) {
+	// 	console.log(d.snippet);
+	// });
 }
