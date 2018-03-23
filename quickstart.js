@@ -121,10 +121,10 @@ function listLabels(auth) {
 			if (labels.length == 0) {
 				console.log("No labels found.");
 			} else {
-				console.log("Labels:");
+				// console.log("Labels:");
 				for (var i = 0; i < labels.length; i++) {
 					var label = labels[i];
-					console.log("- %s", label.name);
+					// console.log("- %s", label.name);
 					// console.log(label.id);
 				}
 			}
@@ -139,32 +139,68 @@ function listLabels(auth) {
 				console.log("The API returned an error: " + err);
 				return;
 			}
-			console.log("Request body: ");
-			console.log(response);
-			console.log("nextPageToken: ");
-			console.log(response.nextPageToken);
-			gmail.users.messages.get(
-				{
-					auth: auth,
-					userId: "me",
-					// id: response.messages.id,
-					id: "16227cc839f69a9a",
-					format: "full"
-				},
-				function(err, response) {
-					if (err) {
-						console.log("The API returned an error: " + err);
-						return;
+			// console.log("Request body: ");
+			// console.log(response);
+			// console.log("nextPageToken: ");
+			// console.log(response.nextPageToken);
+			// console.log(response.messages[0].id);
+			// console.log(response.messages[1].id);
+			// console.log(response.messages[2].id);
+			// console.log(response.messages[3].id);
+			// console.log(response.messages[4].id);
+
+			for (i = 0; i < 5; i++) {
+				var currentMessages = response.messages[i].id;
+				gmail.users.messages.get(
+					{
+						auth: auth,
+						userId: "me",
+						// id: response.messages.id,
+						id: currentMessages,
+						// format: "full",
+						format: "raw"
+					},
+					function(err, response) {
+						if (err) {
+							console.log("The API returned an error: " + err);
+							return;
+						}
+						// console.log(
+						// 	chalk.blue(
+						// 		"List of headers on this message part. For the top-level message part, representing the entire message payload, it will contain the standard RFC 2822 email headers such as To, From, and Subject: "
+						// 	)
+						// );
+						// console.log(response.payload.headers);
+
+						console.log(chalk.blue("Message Sent to: "));
+						// console.log(chalk.blue(response.payload.headers[0].name));
+						console.log(chalk.blue(response.payload.headers[0].value));
+
+						console.log(chalk.yellow("Message Received On: "));
+						// console.log(chalk.yellow(response.payload.headers[22].name));
+						// console.log(
+						// 	chalk.yellow(response.payload.headers[22].value)
+						// );
+						console.log(chalk.cyan("Message Sent From: "));
+						// console.log(chalk.cyan(response.payload.headers[17].name));
+						console.log(chalk.cyan(response.payload.headers[17].value));
+
+						console.log(chalk.magenta("Subject of the Message: "));
+						// console.log(chalk.magenta(response.payload.headers[21].name));
+						console.log(
+							chalk.magenta(response.payload.headers[21].value)
+						);
+
+						console.log(
+							chalk.green("A short part of the message text: ")
+						);
+						console.log(chalk.green(response.snippet));
+
+						// console.log(chalk.red("The Entire email message: "));
+						// console.log(response);
 					}
-					console.log(chalk.blue("List of headers on this message part. For the top-level message part, representing the entire message payload, it will contain the standard RFC 2822 email headers such as To, From, and Subject: "));
-					console.log(chalk.blue(response.payload.headers[0].name));
-					console.log(chalk.blue(response.payload.headers[0].value));
-					console.log(chalk.green("A short part of the message text: "));
-					console.log(chalk.green(response.snippet));
-					console.log(chalk.red("The Entire email message: "));
-					console.log(response);
-				}
-			);
+				);
+			}
 		}
 	);
 }
